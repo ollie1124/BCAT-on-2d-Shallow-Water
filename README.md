@@ -4,8 +4,7 @@
 BCAT (https://arxiv.org/abs/2501.18972) is a PDE foundational model for the 2d fluid systems, including compressible/incompressible Navier-Stokes equations and shallow water equations.  BCAT reduces the computational costs by using block tokens instead of tokenizing the functions at all spacetime points.  
 
 ## What we did?
-While the block is inherently 2d Cartesian, some systems with spherical symmetry are more naturally described in polar coordinates and can be challenging to BCAT.  This project applies BCAT on 2d spherical shallow water system (https://en.wikipedia.org/wiki/Shallow_water_equations)
-$$ x $$
+While the block is inherently 2d Cartesian, some systems with spherical symmetry are more naturally described in polar coordinates and can be challenging to BCAT.  This project applies BCAT on a non-dissipative, constant density 2d spherical shallow water system (https://en.wikipedia.org/wiki/Shallow_water_equations)
 
 We use the PDE Bench's dataset () and studies its performance and interprete the model's state parameters in various cases.  More specifically, we did the followings:
 
@@ -61,3 +60,8 @@ We use the PDE Bench's dataset () and studies its performance and interprete the
 - Few shot learning after training: adjust the parameters in "params" in main.few_shots.py to those of trained model and load the checkpoint file.
 - Zero-shot learning after training: adjust the parameters in "params" in main.few_shots.py to those of trained model and load the checkpoint file.
 - PINN: adjust w_PINN in the main_PINN.py.
+
+## Resources
+- BCAT GitHub (https://github.com/felix-lyx/bcat)
+- PDE Bench GitHub (https://github.com/pdebench/PDEBench)
+- PDE Bench data download (https://github.com/pdebench/PDEBench/blob/main/pdebench/data_download/README.md)

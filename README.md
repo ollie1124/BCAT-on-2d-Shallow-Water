@@ -6,7 +6,7 @@ BCAT (https://arxiv.org/abs/2501.18972) is a PDE foundational model for the 2d f
 ## What we did?
 While the block is inherently 2d Cartesian, some systems with spherical symmetry are more naturally described in polar coordinates and can be challenging to BCAT.  This project applies BCAT on a non-dissipative, constant density 2d spherical shallow water system (https://en.wikipedia.org/wiki/Shallow_water_equations)
 
-We use the PDE Bench's dataset () and studies its performance and interprete the model's state parameters in various cases.  More specifically, we did the followings:
+We use the PDE Bench's dataset (https://arxiv.org/abs/2210.07182) and studies its performance and interprete the model's state parameters in various cases.  More specifically, we did the followings:
 
 (1) tuned the model hyperparameters to find the optimal range of convergence for each block size,  
 (2) investigated the effect of "block sizes" (block sizes in {8, 16, 32, 64, 128}) with the following metrics: The error images of rollout predictions, mean square errors over rollout horizon, conservation of mass (dM/dt),

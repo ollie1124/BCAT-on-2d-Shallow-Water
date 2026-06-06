@@ -12,8 +12,11 @@ While the block is inherently 2d Cartesian, some systems with spherical symmetry
 We use the PDE Bench's dataset (https://arxiv.org/abs/2210.07182) and studies its performance and interprete the model's state parameters in various cases.  More specifically, we did the followings:
 
 (1) tuned the model hyperparameters to find the optimal range of convergence for each block size,  
+
 (2) investigated the effect of "block sizes" (block sizes in {8, 16, 32, 64, 128}) with the following metrics: The error images of rollout predictions, mean square errors over rollout horizon, conservation of mass (dM/dt),
+
 (3) studied the effect of noise, relevance of choice of initial frame for the rollout prediction and temporal attention,
+
 (4) implemented a physics informed neural network (PINN) by constraining dM/dt to be small.
 
 ## Each file

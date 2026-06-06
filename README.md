@@ -67,6 +67,7 @@ We use the PDE Bench's dataset (https://arxiv.org/abs/2210.07182) and studies it
 
 
 ## How to use 
+- A guideline for setting up Visual Studio is provided in "BCAT VS guideline.pdf".
 - For the first time (training) use: adjust the parameters in "params" in main2.py.
 - Few shot learning after training: adjust the parameters in "params" in main.few_shots.py to those of trained model and load the checkpoint file.
 - Zero-shot learning after training: adjust the parameters in "params" in main.few_shots.py to those of trained model and load the checkpoint file.

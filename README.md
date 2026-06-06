@@ -1,5 +1,8 @@
 # BCAT on 2d Spherical Shallow Water System
 
+## Authors
+Kassandra Hayes (https://github.com/kassi-hayes), Seolhwa Kim (https://github.com/ollie1124), Reed Spitzer (https://github.com/reed-spitzer)
+
 ## What is Block Causal Transformer (BCAT)?
 BCAT (https://arxiv.org/abs/2501.18972) is a PDE foundational model for the 2d fluid systems, including compressible/incompressible Navier-Stokes equations and shallow water equations.  BCAT reduces the computational costs by using block tokens instead of tokenizing the functions at all spacetime points.  
 

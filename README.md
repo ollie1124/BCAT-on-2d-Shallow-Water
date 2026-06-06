@@ -40,14 +40,19 @@ We use the PDE Bench's dataset () and studies its performance and interprete the
 **Training and rollout prediction main files:**
 - main2.py: 
 (1) Using "params = types.SimpleNameSpace" (a kind of dictionary), we specify the dataset related parameters, training preferences and model parameters (e.g. dim = embedding dimension).
+
 (2) Using PyTorch's utils library, we create two ShallowWater2D objects, one for training and the other for validation, and pass them to two DataLoaders.
+
 (3) We construct the model (a BCAT object) and optimizer (AdamW)
+
 (4) We normalize the dataset and enter the training loop.  Once the training is over, we save
     - the trained state vectors (checkpoint) to "bcat_shallow_water.pt",
     - the training/validation losses to 'training_validation_losses.csv',
     - the loss per epoch graph to 'training_validation_loss_plot.pdf'
     and print out the number of model and encoder/decoder parameters.
+    
 (5) We load the checkpoint, generate rollout predictions and plot the predictions vs ground truth vs errors for 4 time steps.
+
 (6) We save the performance metric and model hyperparameters.
 
 - main_few_shots.py: loads the checkpoint files (state vector of trained model) and enters a few epoch training loop.  Then performs rollout prediction as in main2.py.

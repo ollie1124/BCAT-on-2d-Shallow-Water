@@ -41,7 +41,7 @@ We use the PDE Bench's dataset () and studies its performance and interprete the
 - main2.py: 
 (1) Using "params = types.SimpleNameSpace" (a kind of dictionary), we specify the dataset related parameters, training preferences and model parameters (e.g. dim = embedding dimension).
 (2) Using PyTorch's utils library, we create two ShallowWater2D objects, one for training and the other for validation, and pass them to two DataLoaders.
-(3) We construct the model (a BCAT object), optimizer (AdamW)/
+(3) We construct the model (a BCAT object) and optimizer (AdamW)
 (4) We normalize the dataset and enter the training loop.  Once the training is over, we save
   - the trained state vectors (checkpoint) to "bcat_shallow_water.pt",
   - the training/validation losses to 'training_validation_losses.csv',

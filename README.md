@@ -20,7 +20,7 @@ We use the PDE Bench's dataset (https://arxiv.org/abs/2210.07182) and studies it
 (4) implemented a physics informed neural network (PINN) by constraining dM/dt to be small.
 
 ## Each file
-**Core files:**
+**Core files (from original BCAT GitHub):**
 - all_dataset.py: The ShallowWater2D class organizes PDE Bench's shallow water dataset (1000 samples, 128*128 spatial resolutions, 101 time steps, 1 channel) in the .h5 format into a Python list, d = {"data_mask", "data", "t", "symbol_input"} after 
 (1) shuffling the samples depending on user preference (train/test), 
 (2) limiting the number of samples to accommodate limited RAM space, 

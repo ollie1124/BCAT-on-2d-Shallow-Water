@@ -86,7 +86,7 @@ params = types.SimpleNamespace(
     batch_size=4, # Reduced to 2 as per user's current setting
 
     # Latent space encoding/decoding params
-    dim = 128, # originally 1024, embedding dimension, a.k.a. hidden dimension of attention, latent space dimension, etc. (Increased from 64)
+    dim = 256, # originally 1024, embedding dimension, a.k.a. hidden dimension of attention, latent space dimension, etc. (Increased from 64)
     x_num = 128,
     patch_size = 128,# originally 128 (64 for fine tuning)
     patch_num = 128//128, # params.x_num// params.patch_size,
@@ -94,9 +94,9 @@ params = types.SimpleNamespace(
 
     # Transformer hyperparameters
     # These are in Table 9 of the BCAT paper.  I downsized the parameters.
-    nhead = 2, # 8, originally. (Increased from 2)
-    num_layers=2,# 12, originally (Increased from 2)
-    dim_feedforward=128, # 275, originally (Increased from 64)
+    nhead = 4, # 8, originally. (Increased from 2)
+    num_layers=4,# 12, originally (Increased from 2)
+    dim_feedforward=256, # 275, originally (Increased from 64)
     max_len=128,
     max_time_len =101, # Must match params.data.t_num (Reduced from 101 for performance)
     dropout=0
@@ -233,9 +233,9 @@ print(f"Calculated data mean: {data_mean:.4f}, data std: {data_std:.4f}")
 batch = next(iter(train_loader))
 
 
-num_epochs = 1
-loss_threshold = 0.003
-w_pinn = 0.1
+num_epochs = 300
+loss_threshold = 0.0005
+w_pinn = 0.0
 
 def time_der2(mass):
   # mass is (B, T, x_num, x_num, c)
@@ -309,9 +309,6 @@ for epoch in range(num_epochs):
 
     print(f"Epoch {epoch:03d} | Train Loss: {avg_train_loss:.6f}")
     
-    if avg_train_loss < loss_threshold:
-      break
-    
     
     
     # Validation loop
@@ -347,6 +344,9 @@ for epoch in range(num_epochs):
 
     print(f"Epoch {epoch:03d} | Val Loss: {avg_val_loss:.6f}")
 
+    if avg_train_loss < loss_threshold:
+
+        break
     # Saving check point
     checkpoint_path = "bcat_shallow_water.pt"
 
@@ -434,7 +434,7 @@ data_sample = val_batch["data"][0:1, :, :, :, :].to(device) # (1, T, H, W, C)
 times_sample = val_batch["t"][0:1, :].to(device) # (1, T)
 
 # The input to rollout_model should be the first timestep of the data_sample
-initial_time = 10
+initial_time = 0
 initial_input = data_sample[:, initial_time:initial_time+1, :, :, :]
 # initial_input = data_sample[:, :1, :, :, :]
 

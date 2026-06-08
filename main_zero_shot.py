@@ -115,6 +115,78 @@ symbol_env = types.SimpleNamespace()
 print(f"data_path has been set to: {params.data.shallow_water.data_path}")
 
 
+# ===============================
+# parameters with zero noise
+# ===============================
+params_zero_noise = types.SimpleNamespace(
+    # Seolhwa: types.SimpleNamespace is a dictionary that allows dot access. Instead of params["data"]["x_num"], we can simply write params.data.x_num
+    # This is used because the original project uses OmegaConf and Hydra which produce objects accessed like "config.data.x_num".
+    # We kept it because we used alldataset.py to retrieve the data set from .h5 file, which relies on this dot access.
+    data=types.SimpleNamespace(
+        # This first part is the parameters for shallw water system dataset.
+        shallow_water=types.SimpleNamespace(
+            data_path=local_path,
+            x_num=128,
+            t_step=4
+        ),
+
+        # We can define other systems too.
+          # e.g. diff_reaction=types.SimpleNamespace(...),
+
+        # Below are default values:
+        x_num=128,# This is for shallow water dataset, but for other dataset, this number might change.
+        t_num=101,#26,#101,# Other systems (e.g. NS) have different time steps... (Reduced from 101 for performance)
+        random_start=types.SimpleNamespace(
+            train=False, 
+            val=True, 
+            test=False, 
+            start_max=50 # change the start_max to 0 to disable random start, or set to a positive number to enable random start up to that number of time steps. This is used to test the effect of random start on the model performance.
+            ),
+        # random_start={'train': False, 'val': True, 'test': False, 'start_max': 0},
+        # random_start={'test': types.SimpleNamespace(train=True, val=True, test=True, start_max=50), 'train': types.SimpleNamespace(train=True, val=True, test=True, start_max=50), 'val': types.SimpleNamespace(train=True, val=True, test=True, start_max=50)},
+        train_val_test_ratio=[0.8, 0.1, 0.1],
+        tie_fields=True,
+        max_output_dimension=1
+    ),
+    overfit_test=False,
+    noise=0,# from 0 to 1
+    noise_type="additive", # "multiplicative",
+    flip=False,
+    rotate=False,
+    use_raw_time=True, # Changed to True to include time data
+    symbol=types.SimpleNamespace(symbol_input=False),
+    num_workers=0,
+    num_workers_eval=0,
+    local_rank=0,
+    n_gpu_per_node=1,
+    global_rank=0,
+    test_seed=42,
+    batch_size=4, # Reduced to 2 as per user's current setting
+
+    # Latent space encoding/decoding params
+    dim = 128, # originally 1024, embedding dimension, a.k.a. hidden dimension of attention, latent space dimension, etc. (Increased from 64)
+    x_num = 128,
+    patch_size = 128,# originally 128 (64 for fine tuning)
+    patch_num = 128//128, # params.x_num// params.patch_size,
+    patch_num_output = 128//128, #params.patch_num, # in case the decoder (de)compresses the result
+    conv_dim = 32,#Default: self.dim // 4 # decoder's inner neural network dimension.  embeding dim -> conv_dim -> patch_size
+
+    # Transformer hyperparameters
+    # These are in Table 9 of the BCAT paper.  I downsized the parameters.
+    nhead = 2, # 8, originally. (Increased from 2)
+    num_layers=2,# 12, originally (Increased from 2)
+    dim_feedforward=128, # 275, originally (Increased from 64)
+    max_len=128,#128,
+    max_time_len =101, # Must match params.data.t_num (Reduced from 101 for performance)
+    dropout=0
+
+)
+
+
+
+
+
+
 
 
 
@@ -155,6 +227,13 @@ train_dataset = ShallowWater2D(
 
 val_dataset = ShallowWater2D(
     params=params,
+    symbol_env=None,
+    split="val",
+    train=False,
+)
+
+val_dataset_zero_noise = ShallowWater2D(
+    params=params_zero_noise,
     symbol_env=None,
     split="val",
     train=False,
@@ -247,18 +326,27 @@ val_loader = DataLoader(
     #shuffle=True # For consistent validation results
 )
 
+val_loader_zero_noise = DataLoader(
+    val_dataset_zero_noise,
+    batch_size=params_zero_noise.batch_size,
+    num_workers=params_zero_noise.num_workers_eval
+    #shuffle=True # For consistent validation results
+)
 
 # Get a single batch for testing rollout
 val_batch = next(iter(val_loader))
+val_batch_zero_noise = next(iter(val_loader_zero_noise))
 
 # Prepare inputs for rollout_model
 # We take the first sample from the batch
 data_sample = val_batch["data"][0:1, :, :, :, :].to(device) # (1, T, H, W, C)
+data_sample_zero_noise = val_batch_zero_noise["data"][0:1, :, :, :, :].to(device) # (1, T, H, W, C)
 times_sample = val_batch["t"][0:1, :].to(device) # (1, T)
 
 # The input to rollout_model should be the first timestep of the data_sample
 initial_time = 1
 initial_input = data_sample[:, initial_time:initial_time+1, :, :, :]
+initial_input_zero_noise = data_sample_zero_noise[:, initial_time:initial_time+1, :, :, :]
 # initial_input = data_sample[:, :1, :, :, :]
 
 # The full time sequence for the prediction horizon
@@ -285,11 +373,15 @@ print(f"Predicted sequence shape: {predicted_sequence.shape}")
 
 # Compare with ground truth
 ground_truth_sequence = data_sample[:, initial_time + input_len:, :, :, :]
+ground_truth_sequence_zero_noise = data_sample_zero_noise[:, initial_time + input_len:, :, :, :]
 error = predicted_sequence - ground_truth_sequence
+error_zero_noise = predicted_sequence - ground_truth_sequence_zero_noise
 
 # Calculate and print Mean Squared Error
 mse = torch.mean(error**2).item()
 print(f"\n Rollout Mean Squared Error (MSE): {mse:.6f}\n")
+mse_zero_noise = torch.mean(error_zero_noise**2).item()
+print(f"\n Rollout Mean Squared Error (MSE) with zero noise: {mse_zero_noise:.6f}\n")
 
 
 
@@ -306,6 +398,7 @@ vmin_val = min(predicted_sequence.min().item(), ground_truth_sequence.min().item
 
 # For error plot, set vmin and vmax symmetrically around 0 for a diverging colormap
 max_abs_error = torch.max(torch.abs(error)).item()
+max_abs_error = torch.max(torch.abs(error_zero_noise)).item()
 
 error_vmin = -max_abs_error
 error_vmax = max_abs_error
@@ -326,8 +419,9 @@ for i in range(num_frames_to_plot):
     # Ground truth frame (corresponding to the same time step)
     gt_frame = ground_truth_sequence[0, plot_idx, :, :, 0].cpu().numpy()
     # Error frame
-    err_frame = error[0, plot_idx, :, :, 0].cpu().numpy()
-    
+    # err_frame = error[0, plot_idx, :, :, 0].cpu().numpy()
+    err_frame = error_zero_noise[0, plot_idx, :, :, 0].cpu().numpy()
+
     current_time_val = full_times_sequence[0, input_len + plot_idx].item()
 
     # Plot Prediction
@@ -344,7 +438,7 @@ for i in range(num_frames_to_plot):
 
     # Plot Error
     im_err = axes[i, 2].imshow(err_frame, cmap='RdBu_r', origin='lower', vmin=error_vmin, vmax=error_vmax) # Changed colormap and vmin/vmax
-    axes[i, 2].set_title(f'Error (Time: {current_time_val:.2f})')
+    axes[i, 2].set_title(f'Error compared to zero noise (Time: {current_time_val:.2f})')
     axes[i, 2].axis('off')
     fig.colorbar(im_err, ax=axes[i, 2], fraction=0.046, pad=0.04)
 
